@@ -106,7 +106,7 @@ class Game{
                         [
                             getRandomInt(-size,size),
                             getRandomInt(-size,size),
-                            2
+                            getRandomInt(1,3),
                         ],
                         2,
                         "dot",
