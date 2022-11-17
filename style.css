@@ -59,3 +59,11 @@ button:disabled {
 .message-info {
     background-color: lightskyblue;
 }
+
+.message-warning {
+    background-color: lightsalmon;
+}
+
+.message-error {
+    background-color: lightcoral;
+}
