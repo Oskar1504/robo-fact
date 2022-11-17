@@ -45,3 +45,17 @@ button:disabled {
     -ms-user-select: none;
     user-select: none;
 }
+
+
+.grid-container {
+    display: grid;
+    grid-template-columns: 60% 40%;
+  }
+.message{
+    background-color: aliceblue;
+    padding: 10px;
+    border-radius: 10px;
+}
+.message-info {
+    background-color: lightskyblue;
+}

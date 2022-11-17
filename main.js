@@ -10,7 +10,7 @@ class Game{
         posX:1,
         posY:1,
         state: "default",
-        storage:[]
+        storage:this.#getPlayerStorage()
     };
     
     publicAttribute = "public"
@@ -26,7 +26,7 @@ class Game{
         },
         map: {
             objects:{},
-            maxObjects: 2
+            maxObjects: 6
         },
         code: {
             forceBreak: false
@@ -35,7 +35,7 @@ class Game{
 
     constructor() {
         this.generateObjects()
-
+        // at this point rendergame may not have all images //TODO find better way to load images
         this.renderGame()
         this.#renderStorage()
     }
@@ -64,11 +64,17 @@ class Game{
         //draw game grid
         for(let i = 0; i < size; i++){
             for(let j = 0; j < size; j++){
+                // draw grid
                 ctx.strokeRect(fieldSize * i, fieldSize * j, fieldSize, fieldSize);
+                let img = document.getElementById("grass_block_top")
+                ctx.drawImage(img, fieldSize * i  , fieldSize * j, fieldSize, fieldSize)
+
+                //get mapObject
                 const mapObject = this.#getObject( i  + "_" + j )
-                if(mapObject){
-                    ctx.fillStyle = mapObject.type;
-                    ctx.fillRect(fieldSize * i  + buffer , fieldSize * j + buffer, fieldSize - 2 * buffer, fieldSize - 2 * buffer);
+                // draw mapObject
+                if(mapObject != undefined){
+                    let img = document.getElementById(mapObject.type)
+                    ctx.drawImage(img, fieldSize * i  , fieldSize * j, fieldSize, fieldSize)
                 }
             }
         }
@@ -76,17 +82,39 @@ class Game{
         this.renderPlayer()
     }
 
+
+    // Utils
+    // messsages
+    //TODO message qeue mit message objects from classes which allow async derender wenn 5 sec sho wtime over
+    renderMessage(message){
+        const root = document.getElementById("messages")
+        root.innerHTML = ""
+
+        let div = document.createElement("div")
+        div.innerText = message.content
+        div.classList.add("message")
+        div.classList.add("message-" + message.content)
+        
+        root.appendChild(div)
+
+        window.setTimeout(() => {
+            root.innerHTML = ""
+        }, message.duration * 1000);
+    }
+
     //  Map stuff
 
         generateObjects(){
-            const types = ["gold","black","orange"]
+
+            const types = ["coal_ore","gold_ore","iron_ore"]
+
             for(let i = 0; i < this.game.map.maxObjects; i++){
                 this.#mapAddObject({
                     //TODO in functions auslagern
                     // -1 due to render foreach starts with 0
-                    posX: getRandomInt(0, this.game.render.size - 1),
-                    posY: getRandomInt(0, this.game.render.size - 1),
-                    type: types[getRandomInt(0,types.length)]
+                    posX: getRandomInt(1, this.game.render.size - 1),
+                    posY: getRandomInt(1, this.game.render.size - 1),
+                    type: types[getRandomInt(0,types.length-1)]
                 })
             }
         }
@@ -94,6 +122,11 @@ class Game{
         #mapAddObject(mapObject){
             const posKey = `${mapObject.posX}_${mapObject.posY}`
             this.game.map.objects[posKey] = mapObject
+        }
+
+        #mapRemoveObject(pos_key){
+            delete this.game.map.objects[pos_key]
+            this.renderGame()
         }
 
         //key as attribute isnt that good (maybe trash da renderer mit key braucht)| could be reweorked using hardcoded player pos
@@ -220,22 +253,56 @@ class Game{
         const pos = this.getPos()
         const o = this.#getObject(`${pos.x}_${pos.y}`)
         this.game.debugMode ? console.log(o) : null 
+
+        new GameMessage("Inspect: " + JSON.stringify(o))
+
         return o
     }
 
     harvestPos(){
         const pos = this.getPos()
-        const mapObject = this.#getObject(`${pos.x}_${pos.y}`)
+        const pos_key = `${pos.x}_${pos.y}`
+        const mapObject = this.#getObject(pos_key)
         if(mapObject){
             //TODO validate if harvestable | right upgrade
             this.#playerAddMapObject(mapObject)
+            this.#mapRemoveObject(pos_key)
+
+            
+            new GameMessage("harvested: " + JSON.stringify(mapObject))
+        }
+    }
+
+    #getPlayerStorage(){
+        class Storage{
+            add(object){
+                if(this[object.type]){
+                    // when loottable rework this amount replacen
+                    this[object.type].value += 1
+                }else{
+                    //TODO exoprt transform function
+                    //transform mapObject to storageObject
+                    //TODO IDEA use loottable mechanic for map objects
+                        // IDEA maybe loottable before add => outside storage placen/usen
+                    object["value"] = 1
+                    this[object.type] = object
+                }
+                
+            }
+            remove(objectString){
+                this[objectString].value -= 0
+                if(this[objectString].value <= 0){
+                    delete this[objectString]
+                }
+            }
         }
 
+        return new Storage()
     }
 
     #playerAddMapObject(mapObject){
         //TODO check if enough storage available
-        this.#_player.storage.push(mapObject.type)
+        this.#_player.storage.add(mapObject)
 
         this.#renderStorage()
     }
@@ -251,10 +318,10 @@ class Game{
         div.innerText = "Storage"
         root.appendChild(div)
 
-        this.#_player.storage.forEach(item => {
+        Object.values(this.#_player.storage).forEach(item => {
             div = document.createElement("div")
             div.classList.add("item")
-            div.innerText = item
+            div.innerText = `${item.value} x ${item.type}`
             root.appendChild(div)
         })
 
@@ -308,3 +375,25 @@ document.querySelectorAll(".unselectable pre").forEach(elm => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 //https://stackoverflow.com/a/1527820/14077167
+
+// when using message as class i can remove each message by its own
+class GameMessage{
+    constructor(content, type="info", duration=5){
+        const root = document.getElementById("messages")
+        let id = new Date().getTime()
+        this["id"] = id
+
+        let div = document.createElement("div")
+        div.innerText = content
+        div.classList.add("message")
+        div.classList.add("message-" + type)
+        div.id = id
+        
+        root.appendChild(div)
+
+        window.setTimeout(() => {
+            document.getElementById(this.id).remove()
+            delete this
+        }, duration * 1000);
+    }
+}

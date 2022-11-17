@@ -8,7 +8,19 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <canvas id="mainFrame" width="600" height="600"></canvas>
+
+
+    <div class="grid-container">
+        <canvas id="mainFrame" width="600" height="600"></canvas>
+        <div class="row row-column">
+            <div>
+                <h2>Messages</h2>
+                <div id="messages" class="row row-column">
+
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="row row-column">
         <div class="row row-around">
 
@@ -77,6 +89,12 @@
                 </div>
             </div>
         </div>
+    </div>
+    <div style="display: none">
+        <img id="grass_block_top" src="./images/map/grass_block_top.png">
+        <img id="iron_ore" src="./images/map/iron_ore.png">
+        <img id="gold_ore" src="./images/map/gold_ore.png">
+        <img id="coal_ore" onload="game.renderGame()" src="./images/map/coal_ore.png">
     </div>
     <script src="main.js"></script>
 </body>
