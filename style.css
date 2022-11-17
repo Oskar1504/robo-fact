@@ -1,0 +1,47 @@
+
+.headline {
+    font-size: larger;
+    font-weight: bold;
+}
+
+pre {
+    font-size: larger;
+}
+
+
+.row {
+    display: flex;
+}
+.row-column {
+    flex-direction: column;
+    gap: 1rem;
+}
+.no-gap {
+    gap: 0;
+}
+.row-around {
+    justify-content: space-around;
+}
+
+button:disabled {
+    min-width: 42px
+}
+
+#codeInput {
+    width: 600px;
+    height: 250px;
+}
+
+.example-code pre{
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.unselectable {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
