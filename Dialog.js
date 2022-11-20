@@ -16,7 +16,7 @@ class DialogHelper {
 class Dialog {
     //TODO create dialog elm in dom
     constructor(elementId){
-        
+
         let dialog = document.createElement("dialog")
         dialog.id = elementId
         document.querySelector(".dialogs").appendChild(dialog)
@@ -29,6 +29,7 @@ class Dialog {
         //TODO eigenes dom framework einbauen
         let div = document.createElement("div")
         div.id = "dialog-content-wrapper"
+        div.classList.add("dialog-content-wrapper")
         let divContent = document.createElement("div")
         divContent.id = "dialog-content"
         let divControls = document.createElement("div")
@@ -53,15 +54,16 @@ class Dialog {
 }
 
 class DialogNpc extends Dialog {
-    constructor(elementId){
+    constructor(elementId, content){
         super(elementId)
+        this.content = content
         this.createDefaultContent()
     }
 
     createDefaultContent(){
         let div = document.createElement("div")
         let p = document.createElement("p")
-        p.innerText = "hallo ich war auch da"
+        p.innerText = this.content
 
 
         div.appendChild(p)
@@ -83,13 +85,16 @@ class DialogNpc extends Dialog {
             
             let divQuest = document.createElement("div")
             divQuest.innerText = `Quest: "${quest.name}"`
+            divQuest.classList.add("dialog-quest")
             divQuest.id = `quest_${quest.name.replace(" ","_")}`
 
             let divR = document.createElement("div")
-            divR.innerText = `requirements`
+            divR.innerText = `Requirements:`
+            divR.classList.add(`requirements`)
 
             quest.requirements.forEach(req => {
                 let divreq = document.createElement("div")
+                divreq.classList.add(`req`)
 
                 let span = document.createElement("span")
                 span.innerText = req
@@ -100,8 +105,8 @@ class DialogNpc extends Dialog {
                     quest.addRequirement(game.getStorage())
                 })
 
-                divreq.appendChild(button)
                 divreq.appendChild(span)
+                divreq.appendChild(button)
                 divR.appendChild(divreq)
             })
 

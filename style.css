@@ -71,3 +71,38 @@ button:disabled {
 .hide {
     display: none;
 }
+
+.dialogs dialog {
+    width: 50%;
+    margin: auto;
+}
+
+dialog .dialog-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap:1rem;
+}
+
+dialog .dialog-content-wrapper .dialog-quest{
+    padding-left: 1rem;
+}
+
+dialog .dialog-content-wrapper .requirements{
+    padding-left: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap:0.3rem;
+}
+
+dialog .dialog-content-wrapper .requirements .req{
+    padding-left: 1rem;
+    display: flex;
+    gap:1rem;
+    justify-content: start;
+}
+
+dialog .dialog-content-wrapper .requirements .req button{
+    padding: 2px;
+    background-color: lightgreen;
+    border-radius: 10px;
+}

@@ -395,7 +395,7 @@ async function main(){
     //TODO auslagern in config loader
     game.addNPC(new NPC(
         new Position(-3,-5),
-        new NPCCharacter("gray_wool","NPC 1",new DialogNpc("dialog_1"), "lumber"),
+        new NPCCharacter("gray_wool","NPC 1",new DialogNpc("dialog_1","Default dialog content on dialognpc creation"), "lumber"),
         [
             new Quest("quest 1", ["iron_ore"],["gold_ore"],10)
         ],
