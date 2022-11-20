@@ -6,8 +6,8 @@ class Player{
 class Game{
     #privateAttribute = "private"
     #_player = {
-        posX:1,
-        posY:1,
+        posX:0,
+        posY:0,
         state: "default",
         storage:this.#getPlayerStorage()
     };
@@ -18,7 +18,8 @@ class Game{
         debugMode:true,
         render: {
             root: document.getElementById("mainFrame"),
-            size:10,
+            sizeX:10,
+            sizeY:10,
             frameSizeX: 600,
             frameSizeY: 600,
             fieldSize:50
@@ -26,6 +27,8 @@ class Game{
         map: {
             //objects:{},
             objects:[],
+            npcs:[],
+            solidObjects:[],
             maxObjects: 2
         },
         code: {
@@ -38,10 +41,54 @@ class Game{
         this.game.map.maxObjects = mapObjects
         this["gameMap"] = new GameMap()
 
+        //adjust size
+        this.resizeRenderCanvas()
+
         this.generateObjects()
+        this.generateSolidObjects()
         // at this point rendergame may not have all images //TODO find better way to load images
         this.renderGame()
         this.#renderStorage()
+
+        this.#createEventListener()
+
+    }
+
+    #createEventListener(){
+        addEventListener("resize", (ev) => {
+            this.resizeRenderCanvas()
+        })
+    }
+
+    getWinSize(){
+        var win = window,
+        doc = document,
+        docElem = doc.documentElement,
+        body = doc.getElementsByTagName('body')[0],
+        x = win.innerWidth || docElem.clientWidth || body.clientWidth,
+        y = win.innerHeight|| docElem.clientHeight|| body.clientHeight;
+        return [x,y]
+    }
+
+    resizeRenderCanvas(){
+        //adjust size
+        const parentRoot = this.game.render.root.parentElement
+        let width = parentRoot.offsetWidth
+        let height = parentRoot.offsetHeight
+        const tileSize = this.game.render.fieldSize
+        const winSize = this.getWinSize()
+
+        //dont width over win width size
+        width > winSize[0] ? width = winSize[0] : null
+        // always set max height
+        height = winSize[1] - 25
+
+        this.game.render.sizeX = Math.floor(width/tileSize)
+        this.game.render.sizeY = Math.floor(height/tileSize)
+
+        this.game.render.root.width = width
+        this.game.render.root.height = height
+        this.renderGame()
     }
 
     #privateFunctiondebug() {
@@ -53,16 +100,22 @@ class Game{
         this.#privateFunctiondebug()
     }
 
+    addNPC(npc){
+        this.game.map.npcs.push(npc)
+        this.renderGame()
+    }
+
     // Game code
     renderGame(){
         //TODO IDEA ressource nodes could be respawnable
         //delete all empty mapObjects
         this.game.map.objects = this.game.map.objects.filter(elm => elm.amount > 0)
 
+
+
         //pass object to mapraender class
         this.gameMap.renderMap(this)
     }
-
 
     // Utils
     // messsages
@@ -88,17 +141,9 @@ class Game{
         generateObjects(){
 
             const types = ["coal_ore","gold_ore","iron_ore"]
-            const size = this.game.render.size / 2
+            const size = 8
 
             for(let i = 0; i < this.game.map.maxObjects; i++){
-                // this.#mapAddObject({
-                //     //TODO in functions auslagern
-                //     // -1 due to render foreach starts with 0
-                //     posX: getRandomInt(1, this.game.render.size - 1),
-                //     posY: getRandomInt(1, this.game.render.size - 1),
-                //     type: types[getRandomInt(0,types.length-1)]
-                // })
-
                 
                 this.#mapAddObject(
                     new MapObject(
@@ -114,6 +159,16 @@ class Game{
                     )
                 )
             }
+        }
+
+        generateSolidObjects(){
+            //TODO config laoder load solid objects
+            this.game.map.solidObjects.push(... new MapObjectSolidRect(
+                new Position(-5,-7),
+                5,
+                4,
+                "stone_bricks"
+            ).getObjects())
         }
 
         #mapAddObject(mapObject){
@@ -133,113 +188,67 @@ class Game{
         // }
         #getObject(){
             const pos = this.getPos()
-            return this.game.map.objects.sort((a,b) => a.order - b.order).filter(a => a.isInPos(pos.x, pos.y))[0]
-        }
-    
-    //  Code stuff
-    async executeCode(){
-        const root = document.getElementById("codeInput")
-        const executionDelay = document.getElementById("executeDelay").value
-        let noDelay = false
-        let codeCommands = document.getElementById("codeInput").value.split("\n").map(codeCommand => codeCommand.split(":"))
 
-        let codeVars = {}
-        
+            //get map object => resource nodes 20.11.2022
+            let mapObject  = this.game.map.objects.sort((a,b) => a.order - b.order).filter(a => a.isInPos(pos))[0]
 
-        for(let stackIndex = 0; stackIndex < codeCommands.length; stackIndex++){
-            let codeCommand = codeCommands[stackIndex]
-            if(this[codeCommand[0]]){
-                let value = codeCommand[1]
-                if(codeVars[value]){
-                    value = codeVars[value]
-                }
-                this[codeCommand[0]](parseInt(value))
-                noDelay = false
-            }else{
-                // non rerenderigng tasks get executed without delay
-                noDelay = true
-            }
-
-            codeCommand[2] = parseInt(codeCommand[2])
-
-            if(codeCommand[0] == "let"){
-                codeVars[codeCommand[1]] = codeCommand[2]
-            }else if(codeCommand[0] == "+"){
-                codeVars[codeCommand[1]] += codeCommand[2]
-            }else if(codeCommand[0] == "-"){
-                codeVars[codeCommand[1]] -= codeCommand[2]
-            }else if(codeCommand[0] == "="){
-                codeVars[codeCommand[1]] = codeCommand[2]
-            }else if(codeCommand[0] == "do"){
-                stackIndex = codeCommands.map(elm => elm.join(":")).indexOf("fnc:" + codeCommand[1])
-            }else if(codeCommand[0] == "ifnot"){    //TODO total rework due to arry mutatuion wont rerun this for loop
-                let value1 = codeCommand[1]
-                if(codeVars[value1]){
-                    value1 = codeVars[value1]
-                }
-                let value2 = codeCommand[2]
-                if(codeVars[value2]){
-                    value2 = codeVars[value2]
-                }
-
-                value1 = parseInt(value1)
-                value2 = parseInt(value2)
-
-                console.log(value1, value2)
-
-                let newCommand = codeCommand.slice(3,codeCommand.length)
-                if(value1 != value2){
-                    //add next command if not already added
-                    if(codeCommands[stackIndex+1].join(":") != newCommand.join(":")){
-                        codeCommands.splice(stackIndex+1, 0, newCommand.join(":").split(":"))
-                        console.log(codeCommands)
-                    }
-                }else{
-                    //remove previous added command when if isnt ture
-                    if(codeCommands[stackIndex+1].join(":") == newCommand.join(":")){
-                        codeCommands.splice(stackIndex,1)
-                    }
-                }
-                //  if:x:1:do:moveRight
-            }
-
-            this.game.code.forceBreak ? stackIndex = codeCommands.length : null
-            noDelay ? null: await new Promise(resolve => setTimeout(resolve, executionDelay * 1000));
+           
+            return mapObject
+            
         }
 
-        this.game.code.forceBreak = false
-    }
-
-    forceBreak(){
-        this.game.code.forceBreak = true
-    }
-
+        checkSolidMapObjects(position){
+            this.game.map.solidObjects.forEach(obj => {
+                if(obj.isInPos(position)){
+                    throw `Cant walk on: '${obj.type}'.`
+                }
+            })
+        }
 
 
     // Player code
-    #setPos(x, y){
+    /**
+     * sets player chords intern checks for solid mapobejcts
+     *
+     * @param {Position} position
+     * @memberof Game
+     */
+    #setPos(position){
         //TODO important check if pos is valid | depending -x -y and max size
-        this.#_player.posX = x
-        this.#_player.posY = y
+
+        this.checkSolidMapObjects(position)
+        
+        this.#_player.posX = position.x
+        this.#_player.posY = position.y
 
         this.renderGame()
     }
 
     getPos(){
-        return {
-            x: this.#_player.posX,
-            y: this.#_player.posY
-        }
+        return new Position(
+            this.#_player.posX,
+            this.#_player.posY
+        )
     }
 
     moveX(steps){
-        const pos = this.getPos()
-        this.#setPos(pos.x + steps, pos.y)
+        let pos = this.getPos()
+        pos.x += steps
+        try {
+            this.#setPos(pos)
+        } catch (error) {
+            console.warn(error)
+        }
     }
 
     moveY(steps){
-        const pos = this.getPos()
-        this.#setPos(pos.x, pos.y + steps)
+        let pos = this.getPos()
+        pos.y += steps
+        try {
+            this.#setPos(pos)
+        } catch (error) {
+            console.warn(error)
+        }
     }
 
     renderPlayer(){
@@ -255,14 +264,23 @@ class Game{
         const pos = this.getPos()
         const o = this.#getObject(`${pos.x}_${pos.y}`)
         this.game.debugMode ? console.log(o) : null 
+        let foundNpc = false
 
-        if(o == undefined){
+
+         //if no mapObject found check if npc in position and if then open dialog
+         if( o == undefined){
+            this.game.map.npcs.forEach(npc => {
+                if(npc.isInPos(pos)){
+                    npc.character.dialog.open()
+                    foundNpc = true
+                }
+            })
+        }
+        if(o == undefined && !foundNpc){
             new GameMessage(o + "=> No specific type","warning",2)
-        }else{
+        }else if(!foundNpc){
             new GameMessage("Inspect: " + JSON.stringify(o))
         }
-
-
         return o
     }
 
@@ -288,7 +306,7 @@ class Game{
             add(object){
                 if(this[object.type]){
                     // when loottable rework this amount replacen
-                    this[object.type].value += 1
+                    this[object.type].value += object.value
                 }else{
                     //TODO exoprt transform function
                     //transform mapObject to storageObject
@@ -299,8 +317,8 @@ class Game{
                 }
                 
             }
-            remove(objectString){
-                this[objectString].value -= 0
+            remove(objectString, amount){
+                this[objectString].value -= amount
                 if(this[objectString].value <= 0){
                     delete this[objectString]
                 }
@@ -313,7 +331,8 @@ class Game{
     #playerAddMapObject(mapObject){
         const deepCopy = JSON.parse(JSON.stringify(mapObject))
         //TODO check if enough storage available
-        this.#_player.storage.add(deepCopy)
+        //TODO value with loottable
+        this.#_player.storage.add({type:deepCopy.type,value:1})
 
         this.#renderStorage()
     }
@@ -340,74 +359,53 @@ class Game{
 
     getStorage(){
         const o = this.#_player.storage
-        this.game.debugMode ? console.log(o) : null 
+        // this.game.debugMode ? console.log(o) : null 
         return o
     }
-}
 
-let game = new Game()
+    //TODO rework duobled code with sotrage.add() function
+    addToStorage(key, amount){
+        this.#_player.storage.add({type:key,value:amount})
+        this.#renderStorage()
+    }
 
-//TODO overthink mechain
-let codeSnippets = {
-    "first":"moveX:1",
-    "second":"moveX:-1",
-    "third":"let:x:2\nmoveX:x",
-    "4":"let:x:4\n-:x:2\nmoveX:x",
-    "5":"let:x:0\n+:x:2\nmoveX:x",
-    "6":"let:x:0\n+:x:2\nmoveX:x",
-    "7":"let:x:1\nfnc:moveRight\nmoveX:1\n+:x:1\ndo:moveRight"
-}
-
-document.querySelectorAll(".unselectable pre").forEach(elm => {
-    elm.addEventListener("click", (e) => {
-        if(e.target.id){
-            document.getElementById("codeInput").value = codeSnippets[e.target.id]
-        }
-    })
-})
-
-
-//Util
-//TODO auslagern
-
-/**
- * Returns a random integer between min (inclusive) and max (inclusive).
- * The value is no lower than min (or the next integer greater than min
- * if min isn't an integer) and no greater than max (or the next integer
- * lower than max if max isn't an integer).
- * Using Math.round() will give you a non-uniform distribution!
- */
- function getRandomInt(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-//https://stackoverflow.com/a/1527820/14077167
-
-
-
-// when using message as class i can remove each message by its own
-class GameMessage{
-    constructor(content, type="info", duration=5){
-        const root = document.getElementById("messages")
-        
-        if(root.childElementCount >= 5){
-            root.removeChild(root.firstChild)
-        }
-        let id = new Date().getTime()
-        this["id"] = id
-
-        let div = document.createElement("div")
-        div.innerText = content
-        div.classList.add("message")
-        div.classList.add("message-" + type)
-        div.id = id
-        
-        root.appendChild(div)
-
-        window.setTimeout(() => {
-            document.getElementById(this.id).remove()
-            delete this
-        }, duration * 1000);
+    removeFromStorage(key, amount){
+        this.#_player.storage.remove(key,amount)
+        this.#renderStorage()
     }
 }
+
+
+//TODO rework
+let images = new ImageLoader()
+let game = ""
+
+// let dialogs = ""
+
+async function main(){
+    await images.loadImages()
+
+    game = new Game()
+    new KeyboardController(game)
+
+    // dialogs = new DialogHelper()
+    // dialogs.addDialog("first", new DialogNpc(".dialogs #dialog_1"))
+
+
+    //TODO auslagern in config loader
+    game.addNPC(new NPC(
+        new Position(-3,-5),
+        new NPCCharacter("gray_wool","NPC 1",new DialogNpc("dialog_1"), "lumber"),
+        [
+            new Quest("quest 1", ["iron_ore"],["gold_ore"],10)
+        ],
+        []
+    ))
+}
+main()
+
+// delayer rerender due to npc not rendiering first time dont care why
+setTimeout(() => {
+    game.renderGame()
+}, 400)
+
