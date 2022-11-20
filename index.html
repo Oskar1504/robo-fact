@@ -8,75 +8,93 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <canvas id="mainFrame" width="600" height="600"></canvas>
-    <div class="row row-column">
-        <div class="row row-around">
 
-            <div class="row row-column no-gap">
-                <div class="row">
-                    <button onclick="game.inspectPos()">inspect</button>
-                    <button id="up" onclick="game.moveY(-1)">up</button>
-                    <button onclick="game.harvestPos()">harvest</button>
-                </div>
-                <div>
-                    <button id="left" onclick="game.moveX(-1)">left</button>
-                    <button id="down" onclick="game.moveY(1)">downdown</button>
-                    <button id="right" onclick="game.moveX(1)">right</button>
-                </div>
-            </div>
 
-            <div class="row row-column" id="storage">
-            </div>
+    <div class="grid-container">
+        <canvas id="mainFrame" width="600" height="600"></canvas>
+        <div class="row row-column">
+            <div>
+                <h2>Messages</h2>
+                <div id="messages" class="row row-column">
 
-        </div>
-        <div>
-            <div class="row row-column">
-                <div class="row">
-                    <label>Execute delay in seconds: </label>
-                    <input type="number" id="executeDelay"  value="1">
-                    <button onclick="game.executeCode()">execute code</button>
-                    <button onclick="game.forceBreak()">force break execution</button>
-                </div>
-                <textarea id="codeInput"></textarea>
-                <div class="row row-column no-gap example-code unselectable">
-                    <div class="headline" style="margin-left:210px">Example code | click on code to paste it into codeBox</div>
-                    <pre id="first">
-                    moveX:1         | calls intern moveX function with parameter 1 => moves on tile to the right
-                    </pre>
-                    <pre id="second">
-                    moveX:-1        | calls intern moveX function with parameter -1 => moves on tile to the left
-                    </pre>
-                    <pre id="third">
-                    let:x:2         | defines/instanciates variable x with value 2
-                    moveX:x         | calls intern moveX function with parameter 2 => moves two tiles to the right
-                    </pre>
-                    <pre  id="4">
-                    let:x:4         | defines/instanciates variable x with value 4
-                    -:x:2           | removes 2 from variable x
-                    moveX:x         | calls intern moveX function with parameter 2 => moves two tiles to the right
-                    </pre>
-                    <pre  id="5">
-                    let:x:0         | defines/instanciates variable x with value 0
-                    +:x:2           | add 2 to variable x
-                    moveX:x         | calls intern moveX function with parameter 2 => moves two tiles to the right
-                    </pre >
-                    <pre  id="6">
-                    let:x:0         | defines/instanciates variable x with value 0
-                    set:x:2         | set variable x to 2
-                    moveX:x         | calls intern moveX function with parameter 2 => moves two tiles to the right
-                    </pre>
-                    <pre  id="7">
-                    let:x:1         | defines/instanciates variable x with value 1
-                    fnc:moveRight   | defines function with name | used with do:moveRight to jump to this line
-                    moveX:1         | calls intern moveX function with parameter 1 => moves one tile to the right
-                    +:x:1           | add 1 to variable x
-                    do:moveRight    | jump to fnc:moveRight line
-
-                    IMPORTANT THIS WILL OF COURSE END IN AN INFINITE LOOP. USE "force break execution" BUTTON TO STOP SCRIPT
-                    </pre>
                 </div>
             </div>
         </div>
+        <div class="row row-column">
+            <div class="row row-around">
+
+                <div class="row row-column no-gap">
+                    <div class="row">
+                        <button onclick="game.inspectPos()">inspect</button>
+                        <button id="up" onclick="game.moveY(-1)">up</button>
+                        <button onclick="game.harvestPos()">harvest</button>
+                    </div>
+                    <div>
+                        <button id="left" onclick="game.moveX(-1)">left</button>
+                        <button id="down" onclick="game.moveY(1)">downdown</button>
+                        <button id="right" onclick="game.moveX(1)">right</button>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="row row-column">
+                    <div class="row">
+                        <label>Execute delay in seconds: </label>
+                        <input type="number" id="executeDelay"  value="1">
+                        <button onclick="game.executeCode()">execute code</button>
+                        <button onclick="game.forceBreak()">force break execution</button>
+                    </div>
+                    <textarea id="codeInput"></textarea>
+                    <div class="row row-column no-gap example-code unselectable">
+                        <div class="headline" style="margin-left:210px">Example code | click on code to paste it into codeBox</div>
+                        <pre id="first">
+                        moveX:1         | calls intern moveX function with parameter 1 => moves on tile to the right
+                        </pre>
+                        <pre id="second">
+                        moveX:-1        | calls intern moveX function with parameter -1 => moves on tile to the left
+                        </pre>
+                        <pre id="third">
+                        let:x:2         | defines/instanciates variable x with value 2
+                        moveX:x         | calls intern moveX function with parameter 2 => moves two tiles to the right
+                        </pre>
+                        <pre  id="4">
+                        let:x:4         | defines/instanciates variable x with value 4
+                        -:x:2           | removes 2 from variable x
+                        moveX:x         | calls intern moveX function with parameter 2 => moves two tiles to the right
+                        </pre>
+                        <pre  id="5">
+                        let:x:0         | defines/instanciates variable x with value 0
+                        +:x:2           | add 2 to variable x
+                        moveX:x         | calls intern moveX function with parameter 2 => moves two tiles to the right
+                        </pre >
+                        <pre  id="6">
+                        let:x:0         | defines/instanciates variable x with value 0
+                        set:x:2         | set variable x to 2
+                        moveX:x         | calls intern moveX function with parameter 2 => moves two tiles to the right
+                        </pre>
+                        <pre  id="7">
+                        let:x:1         | defines/instanciates variable x with value 1
+                        fnc:moveRight   | defines function with name | used with do:moveRight to jump to this line
+                        moveX:1         | calls intern moveX function with parameter 1 => moves one tile to the right
+                        +:x:1           | add 1 to variable x
+                        do:moveRight    | jump to fnc:moveRight line
+
+                        IMPORTANT THIS WILL OF COURSE END IN AN INFINITE LOOP. USE "force break execution" BUTTON TO STOP SCRIPT
+                        </pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="row row-column" id="storage">
+        </div>
+    </div>
+    <div style="display: none">
+        <img id="grass_block_top" src="./images/map/grass_block_top.png">
+        <img id="iron_ore" src="./images/map/iron_ore.png">
+        <img id="gold_ore" src="./images/map/gold_ore.png">
+        <img id="coal_ore" onload="game.renderGame()" src="./images/map/coal_ore.png">
     </div>
     <script src="main.js"></script>
 </body>
