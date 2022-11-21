@@ -1,5 +1,6 @@
 let imageNames = [
   "./images/map/coal_ore.png",
+  "./images/map/coal_ore_harvestable.png",
   "./images/map/cracked_nether_bricks.png",
   "./images/map/cracked_polished_blackstone_bricks.png",
   "./images/map/cracked_stone_bricks.png",

@@ -1,141 +1,82 @@
-
-
-const Generator={
-    line: {
-        min: (x, m, y, width) => x * m + y,
-        max: (x, m, y, width) => x * m + y + width
-    },
-    dot: {
-        min: (x, leftRigth, upDown, size) => (x - leftRigth) * (x - leftRigth) + upDown,
-        max: (x, leftRigth, upDown, size) => -(x - leftRigth) * (x - leftRigth) + upDown + size
-    }
-};
-
-
 class MapObject {
-    constructor(type, args, order, generator,amount) {
-      this.type = type;
-      this.args = args;
-      this.order = order;
-      this.generator = generator;
-      this.amount = amount;
-    }
-
     /**
-     *
-     *
+     * Creates an instance of MapObject.
+     * @param {string} texture
      * @param {Position} position
-     * @return {boolean} 
+     * @param {LootTable} lootTable
      * @memberof MapObject
      */
-    isInPos(position) {
-        if(this.amount <= 0){
-            return false
-        }
-      return (position.y >=  Generator[this.generator].min(position.x,...this.args) && position.y <= Generator[this.generator].max(position.x,...this.args))
-    }
-  }
-  
-    class MapObjectBound extends MapObject {
-        constructor(type, args, order, generator,amount, minX, maxX) {
-            super(type, args, 100 + order, generator,amount);
-            this.minX = minX;
-            this.maxX = maxX;
-        }
-
-        /**
-         *
-         *
-         * @param {Position} position
-         * @return {boolean} 
-         * @memberof MapObject
-         */
-        isInPos(position) {
-            if(this.amount <= 0){
-                delete this
-            }
-          return ( this.minX <= position.x && this.maxX >= position.x && position.y >=  Generator[this.generator].min(position.x,...this.args) && position.y <= Generator[this.generator].max(position.x,...this.args))
-        }
-    }
-
-
-class Position {
-    constructor(x,y){
-        this.x = x
-        this.y = y
-    }
-}
-
-
-class MapObjectSolid {
-    /**
-     * Creates an instance of MapObjectSolid.
-     * @param {Position} position
-     * @param {int} sizeX
-     * @param {int} sizeY
-     * @param {string} type
-     * @param {int} order
-     * @memberof MapObjectSolid
-     */
-    constructor( position, sizeX, sizeY, type, order=100){
+    constructor(texture, position, lootTable){
+        this.texture = texture
         this.position = position
-        this.sizeX = sizeX - 1  
-        this.sizeY = sizeY - 1
-        this.type = type
-        this.order = order
+        this.lootTable = lootTable
+        this.amount = 1000
+        this.restockTimer = 20
+        this.restockTimerCount = 1
+    }
+
+    isInPos(pos){
+        return this.position.x == pos.x && this.position.y == pos.y
     }
 
     
-    /**
-     *
-     *
-     * @param {Position} position
-     * @return {boolean} 
-     * @memberof MapObject
-     */
-    isInPos(position) {
-        let minX = this.position.x
-        let maxX = this.position.x + this.sizeX
-        let minY = this.position.y
-        let maxY = this.position.y + this.sizeY
-        return (
-            position.x >= minX &&
-            position.x <= maxX &&
-            position.y >= minY &&
-            position.y <= maxY 
-        )
+    isInArea(position, size){
+
+        //I LOVE MATH
+        //german guide for equation https://de.serlo.org/mathe/1783/abstand-zweier-punkte-berechnen
+        return Math.sqrt(Math.pow(position.x - this.position.x, 2) + Math.pow(position.y - this.position.y, 2)) <= size
+    }
+
+    inspect(){
+        return JSON.stringify({
+            texture: this.texture,
+            amount: this.amount
+        })
+    }
+
+    tick(){
+        //chance gets higher with each try
+        let chance = this.restockTimerCount / this.restockTimer
+        if(Math.random() <= chance || chance >= 1){
+            this.restockTimerCount = 1
+            this.amount += 1
+        }else{
+            this.restockTimerCount ++
+        }
+    }
+
+    
+
+    //TODO
+    harvest(){
+        
     }
 }
 
-class MapObjectSolidRect{
-    /**
-     * Creates an instance of MapObjectSolidRect.
-     * @param {Position} position
-     * @param {int} sizeX
-     * @param {int} sizeY
-     * @param {string} type
-     * @memberof MapObjectSolidRect
-     */
-    constructor(position, sizeX, sizeY, type){
-        this.position = position
-        this.sizeX = sizeX
-        this.sizeY = sizeY
-        this.type = type
+class Plant extends MapObject{
+    constructor(texture, position, lootTable, maxGrowState){
+        super(texture, position, lootTable)
+        this.growState = 1
+        this.maxGrowState = maxGrowState
+        this.harvestable = false
+
+        this.amount = 1
+
     }
 
-    getObjects(){
-        let mapObjects = []
-        let x = this.position.x
-        let y = this.position.y
-        mapObjects.push(new MapObjectSolid(new Position(x, y), 1 , this.sizeY, this.type))
-        mapObjects.push(new MapObjectSolid(new Position(x + this.sizeX, y), 1 , this.sizeY, this.type))
 
-        mapObjects.push(new MapObjectSolid(new Position(x, y), this.sizeX , 1, this.type))
-        mapObjects.push(new MapObjectSolid(new Position(x , y + this.sizeY),  this.sizeX/2 , 1, this.type))
-        mapObjects.push(new MapObjectSolid(new Position(x + this.sizeX/2 + 1, y + this.sizeY),  (this.sizeX/2) , 1, this.type))
-
-
-
-        return mapObjects
+    tick(){
+        if(this.growState <= this.maxGrowState){
+            this.growState ++
+        }else if(!this.harvestable){
+            this.harvestable = true
+            this.texture = this.texture + "_harvestable"
+            window.dispatchEvent(window.customEvents.renderMap)
+        }
     }
-} 
+
+    //TODO
+    harvest(){
+
+    }
+}

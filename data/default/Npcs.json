@@ -1,0 +1,26 @@
+[
+    {
+        "position":{
+            "x":-3,
+            "y":-5
+        },
+        "character":{
+            "type":"gray_wool",
+            "name":"Npc 1",
+            "profession": "miner",
+            "dialog":{
+                "elementId":"dialog_1",
+                "content":"Defualt npc dialog content"
+            }
+        },
+        "quests":[
+            {
+                "name":"quest 3",
+                "requirements":["iron_ore"],
+                "rewards":["gold_ore"],
+                "xp": 10
+            }
+        ],
+        "trades": []
+    }
+]

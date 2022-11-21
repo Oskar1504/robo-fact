@@ -23,6 +23,10 @@ class NPC {
             position.y == this.position.y
         )
     }
+
+    isInArea(position, size){
+        return Math.sqrt(Math.pow(position.x - this.position.x, 2) + Math.pow(position.y - this.position.y, 2)) <= size
+    }
 }
 
 class NPCCharacter{

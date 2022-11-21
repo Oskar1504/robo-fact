@@ -20,7 +20,8 @@ class ImageLoader{
             return this.images[imageName]
         }else{
             console.error("No image with key: '" +imageName+"' found")
-            return undefined
+            //Return undefined texture 
+            return this.images["undefined"]
         }
     }
 
