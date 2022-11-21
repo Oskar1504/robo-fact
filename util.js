@@ -37,3 +37,10 @@ function randomWithSeed(seed, min, max) {
     var x = Math.sin(seed++) * 10000;
     return Math.floor((x - Math.floor(x)) * (max - min) ) + min;
 }
+//TODO add link
+
+
+function between(x, min, max) {
+  return x >= min && x <= max;
+}
+//https://stackoverflow.com/a/6454237

@@ -34,6 +34,10 @@ class MapObject {
         }
       return (position.y >=  Generator[this.generator].min(position.x,...this.args) && position.y <= Generator[this.generator].max(position.x,...this.args))
     }
+
+    isInArea(){
+        return true
+    }
   }
   
     class MapObjectBound extends MapObject {
@@ -55,6 +59,10 @@ class MapObject {
                 delete this
             }
           return ( this.minX <= position.x && this.maxX >= position.x && position.y >=  Generator[this.generator].min(position.x,...this.args) && position.y <= Generator[this.generator].max(position.x,...this.args))
+        }
+
+        isInArea(){
+            return true
         }
     }
 
@@ -105,6 +113,10 @@ class MapObjectSolid {
             position.y <= maxY 
         )
     }
+
+    isInArea(){
+        return true
+    }
 }
 
 class MapObjectSolidRect{
@@ -121,6 +133,7 @@ class MapObjectSolidRect{
         this.sizeX = sizeX
         this.sizeY = sizeY
         this.type = type
+        this.mapObjects = this.getObjects()
     }
 
     getObjects(){
@@ -134,8 +147,13 @@ class MapObjectSolidRect{
         mapObjects.push(new MapObjectSolid(new Position(x , y + this.sizeY),  this.sizeX/2 , 1, this.type))
         mapObjects.push(new MapObjectSolid(new Position(x + this.sizeX/2 + 1, y + this.sizeY),  (this.sizeX/2) , 1, this.type))
 
-
-
         return mapObjects
+    }
+
+    isInArea(position, size){
+
+        //I LOVE MATH
+        //german guide for equation https://de.serlo.org/mathe/1783/abstand-zweier-punkte-berechnen
+        return Math.sqrt(Math.pow(position.x - this.position.x, 2) + Math.pow(position.y - this.position.y, 2)) <= size
     }
 } 

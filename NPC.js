@@ -23,6 +23,10 @@ class NPC {
             position.y == this.position.y
         )
     }
+
+    isInArea(position, size){
+        return true
+    }
 }
 
 class NPCCharacter{

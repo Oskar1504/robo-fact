@@ -24,33 +24,27 @@ class Game{
             frameSizeY: 600,
             fieldSize:50
         },
-        map: {
-            //objects:{},
-            objects:[],
-            npcs:[],
-            solidObjects:[],
-            maxObjects: 2
-        },
         code: {
             forceBreak: false
         }
     }
 
-    constructor(size=10, mapObjects=6) {
+
+    constructor(size=10) {
         this.game.render.size = size
-        this.game.map.maxObjects = mapObjects
-        this["gameMap"] = new GameMap()
+        /** @type GameMap */
+        this.gameMap = new GameMap()
 
         //adjust size
         this.resizeRenderCanvas()
 
-        this.generateObjects()
-        this.generateSolidObjects()
-        // at this point rendergame may not have all images //TODO find better way to load images
-        this.renderGame()
+        // this.generateObjects()
+        // this.generateSolidObjects()
         this.#renderStorage()
 
         this.#createEventListener()
+
+
 
     }
 
@@ -100,19 +94,8 @@ class Game{
         this.#privateFunctiondebug()
     }
 
-    addNPC(npc){
-        this.game.map.npcs.push(npc)
-        this.renderGame()
-    }
-
     // Game code
     renderGame(){
-        //TODO IDEA ressource nodes could be respawnable
-        //delete all empty mapObjects
-        this.game.map.objects = this.game.map.objects.filter(elm => elm.amount > 0)
-
-
-
         //pass object to mapraender class
         this.gameMap.renderMap(this)
     }
@@ -198,11 +181,27 @@ class Game{
         }
 
         checkSolidMapObjects(position){
-            this.game.map.solidObjects.forEach(obj => {
-                if(obj.isInPos(position)){
-                    throw `Cant walk on: '${obj.type}'.`
-                }
-            })
+            //IMPORTANT need to create new postion otherwise calc in function would mess up player pos
+            let mapObjectsObject = this.gameMap.getMapObjects(new Position(position.x, position.y),["solidObjects"])
+            if(Object.keys(mapObjectsObject).length > 0){
+                console.debug(`Processing ${Object.values(mapObjectsObject["solidObjects"]).length} solid objects`)
+                Object.values(mapObjectsObject["solidObjects"]).forEach(solidObject => {
+                    if(solidObject.mapObjects == undefined){
+                        if(solidObject.isInPos(position)){
+                            throw `Cant walk on: '${solidObject.type}'.`
+                        }
+                    }else{
+                        solidObject.mapObjects.forEach(obj2 => {
+                            if(obj2.isInPos(position)){
+                                throw `Cant walk on: '${obj2.type}'.`
+                            }
+                        })
+                    }
+                })
+            }else{
+                console.debug("no solid obejct loaded so nothing gets processed")
+            }
+            
         }
 
 
@@ -268,6 +267,7 @@ class Game{
 
 
          //if no mapObject found check if npc in position and if then open dialog
+         //TODO npc area filter
          if( o == undefined){
             this.game.map.npcs.forEach(npc => {
                 if(npc.isInPos(pos)){
@@ -384,7 +384,7 @@ let game = ""
 
 async function main(){
     await images.loadImages()
-
+    /**@type Game */
     game = new Game()
     new KeyboardController(game)
 
@@ -393,13 +393,27 @@ async function main(){
 
 
     //TODO auslagern in config loader
-    game.addNPC(new NPC(
+    game.gameMap.addNPC(new NPC(
         new Position(-3,-5),
         new NPCCharacter("gray_wool","NPC 1",new DialogNpc("dialog_1","Default dialog content on dialognpc creation"), "miner"),
         [
             new Quest("quest 1", ["iron_ore"],["gold_ore"],10)
         ],
         []
+    ))
+    
+    game.gameMap.addSolidBuilding(new MapObjectSolidRect(
+        new Position(-5,-7),
+        5,
+        3,
+        "stone_bricks"
+    ))
+    
+    game.gameMap.addSolidBuilding(new MapObjectSolidRect(
+        new Position(5,7),
+        5,
+        3,
+        "cracked_stone_bricks"
     ))
 }
 main()
