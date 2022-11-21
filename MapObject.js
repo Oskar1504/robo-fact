@@ -6,8 +6,21 @@ const Generator={
         max: (x, m, y, width) => x * m + y + width
     },
     dot: {
-        min: (x, leftRigth, upDown, size) => (x - leftRigth) * (x - leftRigth) + upDown,
-        max: (x, leftRigth, upDown, size) => -(x - leftRigth) * (x - leftRigth) + upDown + size
+        min: (x, leftRigth, upDown, size) => {
+            let lol = 1
+            if(size > 2){
+                lol = (((size-2)/size)/((size/2)-1))
+            }
+            return lol * (x - leftRigth) * (x - leftRigth) + upDown
+        },
+        max: (x, leftRigth, upDown, size) => {
+            let lol = 1
+            if(size > 2){
+                lol = (((size-2)/size)/((size/2)-1))
+            }
+
+            return -lol * (x - leftRigth) * (x - leftRigth) + upDown + size
+        }
     }
 };
 

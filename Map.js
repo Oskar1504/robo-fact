@@ -142,8 +142,12 @@ class GameMap{
     
     addNPC(npc){
         this.mapObjects.npcs.push(npc)
-        this.renderMap()
     }
+    
+    addNode(node){
+        this.mapObjects.objects.push(node)
+    }
+
 
     /**
      *

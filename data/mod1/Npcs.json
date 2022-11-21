@@ -10,14 +10,14 @@
             "profession": "lumber",
             "dialog":{
                 "elementId":"dialog_1",
-                "content":"Defualt npc dialog content"
+                "content":"Ich hassse die grauen"
             }
         },
         "quests":[
             {
                 "name":"quest 1",
-                "requirements":["iron_ore"],
-                "rewards":["gold_ore"],
+                "requirements":["wood"],
+                "rewards":["apple"],
                 "xp": 10
             }
         ],

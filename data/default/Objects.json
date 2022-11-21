@@ -1,0 +1,9 @@
+[
+    {
+        "type":"iron_ore",
+        "args":[-4,5,6],
+        "order":2,
+        "generator":"dot",
+        "amount":8
+    }
+]

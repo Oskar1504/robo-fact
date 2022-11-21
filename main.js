@@ -91,7 +91,20 @@ class Game{
                 ))
             })
 
-            
+            let nodes = await fetch(`./data/${folder}/Objects.json`).then(r => r.json()).then(d => {
+                return d
+            })
+            nodes.forEach(node => {
+                this.gameMap.addNode(new MapObject(
+                    node.type,
+                    node.args,
+                    node.order,
+                    node.generator,
+                    node.amount
+                ))
+            })
+
+
        })
     }
 
@@ -147,109 +160,44 @@ class Game{
         this.gameMap.renderMap(this)
     }
 
-    // Utils
-    // messsages
-    //TODO message qeue mit message objects from classes which allow async derender wenn 5 sec sho wtime over
-    renderMessage(message){
-        const root = document.getElementById("messages")
-        root.innerHTML = ""
-
-        let div = document.createElement("div")
-        div.innerText = message.content
-        div.classList.add("message")
-        div.classList.add("message-" + message.content)
+    // Map stuff
+    #getObject(){
+        const pos = this.getPos()
+        let objects = this.gameMap.getMapObjects(new Position(pos.x, pos.y),["objects"])["objects"]
         
-        root.appendChild(div)
+        let mapObject = undefined
 
-        window.setTimeout(() => {
-            root.innerHTML = ""
-        }, message.duration * 1000);
+        if(objects != undefined){
+            mapObject  = objects.sort((a,b) => a.order - b.order).filter(a => a.isInPos(pos))[0]
+        }
+        
+        return mapObject
+        
     }
 
-    //  Map stuff
-
-        generateObjects(){
-
-            const types = ["coal_ore","gold_ore","iron_ore"]
-            const size = 8
-
-            for(let i = 0; i < this.game.map.maxObjects; i++){
-                
-                this.#mapAddObject(
-                    new MapObject(
-                        types[getRandomInt(0,types.length-1)],
-                        [
-                            getRandomInt(-size,size),
-                            getRandomInt(-size,size),
-                            getRandomInt(1,3),
-                        ],
-                        2,
-                        "dot",
-                        getRandomInt(1,10)
-                    )
-                )
-            }
-        }
-
-        generateSolidObjects(){
-            //TODO config laoder load solid objects
-            this.game.map.solidObjects.push(... new MapObjectSolidRect(
-                new Position(-5,-7),
-                5,
-                4,
-                "stone_bricks"
-            ).getObjects())
-        }
-
-        #mapAddObject(mapObject){
-            // const posKey = `${mapObject.posX}_${mapObject.posY}`
-            // this.game.map.objects[posKey] = mapObject
-            this.game.map.objects.push(mapObject)
-        }
-
-        #mapRemoveObject(pos_key){
-            delete this.game.map.objects[pos_key]
-            this.renderGame()
-        }
-
-        //key as attribute isnt that good (maybe trash da renderer mit key braucht)| could be reweorked using hardcoded player pos
-        // #getObject(key){
-        //     return this.game.map.objects[key]
-        // }
-        #getObject(){
-            const pos = this.getPos()
-
-            //get map object => resource nodes 20.11.2022
-            let mapObject  = this.game.map.objects.sort((a,b) => a.order - b.order).filter(a => a.isInPos(pos))[0]
-
-           
-            return mapObject
-            
-        }
-
-        checkSolidMapObjects(position){
-            //IMPORTANT need to create new postion otherwise calc in function would mess up player pos
-            let mapObjectsObject = this.gameMap.getMapObjects(new Position(position.x, position.y),["solidObjects"])
-            if(Object.keys(mapObjectsObject).length > 0){
-                console.debug(`Processing ${Object.values(mapObjectsObject["solidObjects"]).length} solid objects`)
-                Object.values(mapObjectsObject["solidObjects"]).forEach(solidObject => {
-                    if(solidObject.mapObjects == undefined){
-                        if(solidObject.isInPos(position)){
-                            throw `Cant walk on: '${solidObject.type}'.`
-                        }
-                    }else{
-                        solidObject.mapObjects.forEach(obj2 => {
-                            if(obj2.isInPos(position)){
-                                throw `Cant walk on: '${obj2.type}'.`
-                            }
-                        })
+    checkSolidMapObjects(position){
+        //IMPORTANT need to create new postion otherwise calc in function would mess up player pos
+        let mapObjectsObject = this.gameMap.getMapObjects(new Position(position.x, position.y),["solidObjects"])
+        if(Object.keys(mapObjectsObject).length > 0){
+            console.debug(`Processing ${Object.values(mapObjectsObject["solidObjects"]).length} solid objects`)
+            Object.values(mapObjectsObject["solidObjects"]).forEach(solidObject => {
+                if(solidObject.mapObjects == undefined){
+                    if(solidObject.isInPos(position)){
+                        throw `Cant walk on: '${solidObject.type}'.`
                     }
-                })
-            }else{
-                console.debug("no solid obejct loaded so nothing gets processed")
-            }
-            
+                }else{
+                    solidObject.mapObjects.forEach(obj2 => {
+                        if(obj2.isInPos(position)){
+                            throw `Cant walk on: '${obj2.type}'.`
+                        }
+                    })
+                }
+            })
+        }else{
+            console.debug("no solid obejct loaded so nothing gets processed")
         }
+        
+    }
 
 
     // Player code
@@ -316,7 +264,7 @@ class Game{
          //if no mapObject found check if npc in position and if then open dialog
          //TODO npc area filter
          if( o == undefined){
-            this.game.map.npcs.forEach(npc => {
+            this.gameMap.mapObjects.npcs.forEach(npc => {
                 if(npc.isInPos(pos)){
                     npc.character.dialog.open()
                     foundNpc = true
