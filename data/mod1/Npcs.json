@@ -22,5 +22,29 @@
             }
         ],
         "trades": []
+    },
+    {
+        "position":{
+            "x":7,
+            "y":5
+        },
+        "character":{
+            "type":"lime_wool",
+            "name":"Npc 1",
+            "profession": "fighter",
+            "dialog":{
+                "elementId":"dialog_1",
+                "content":"Ich bin trader 3 n"
+            }
+        },
+        "quests":[
+            {
+                "name":"quest 2",
+                "requirements":["wood","pot"],
+                "rewards":["apple"],
+                "xp": 10
+            }
+        ],
+        "trades": []
     }
 ]

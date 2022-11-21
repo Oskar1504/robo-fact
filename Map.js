@@ -16,7 +16,7 @@ class GameMap{
     }
 
     config = {
-        mapObjectLoadSize: 15
+        mapObjectLoadSize: 25
     }
 
     renderMap(game){

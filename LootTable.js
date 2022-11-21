@@ -3,7 +3,7 @@ class LootTable{
         Object.assign(this, object);
     }
 
-    roll(){
+    roll(){ 
         let o = []
         this.rolls.forEach(entry => {
             if(Math.random() >= entry.chance || entry.chance == 1){

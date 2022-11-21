@@ -15,7 +15,7 @@
         },
         "quests":[
             {
-                "name":"quest 1",
+                "name":"quest 3",
                 "requirements":["iron_ore"],
                 "rewards":["gold_ore"],
                 "xp": 10
