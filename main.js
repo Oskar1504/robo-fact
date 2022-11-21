@@ -43,6 +43,7 @@ class Game{
         this.#renderStorage()
 
         this.#createEventListener()
+
         this.dataLoader = []
     }
 
@@ -52,6 +53,9 @@ class Game{
         })
 
         await this.loadGameDataFiles()
+
+        
+        this.#createGameLoop()
     }
 
     async loadGameDataFiles(){
@@ -95,13 +99,26 @@ class Game{
                 return d
             })
             nodes.forEach(node => {
-                this.gameMap.addNode(new MapObject(
-                    node.type,
-                    node.args,
-                    node.order,
-                    node.generator,
-                    node.amount
-                ))
+                let o = undefined
+                if(node.class == "node"){
+                    o = new MapObject(
+                        node.texture,
+                        new Position(node.position.x, node.position.y),
+                        new LootTable(node.lootTable)
+                    )
+                }else if(node.class =="plant"){
+
+                    o = new Plant(
+                        node.texture,
+                        new Position(node.position.x, node.position.y),
+                        new LootTable(node.lootTable),
+                        node.maxGrowState
+                    )
+                }
+                
+                if(o != undefined){
+                    this.gameMap.addNode(o)
+                }
             })
 
 
@@ -112,6 +129,32 @@ class Game{
         addEventListener("resize", (ev) => {
             this.resizeRenderCanvas()
         })
+
+        window["customEvents"] = {}
+        window.customEvents["renderMap"] = new Event('renderMap');
+
+        // Listen for the event.
+        window.addEventListener('renderMap', (e) => { 
+            this.renderGame()
+         }, false);
+
+    }
+
+    #createGameLoop(){
+        this.loop = window.setInterval(()=>{
+            console.debug("Game tick")
+            const pos = this.getPos()
+            const mapObjects = this.gameMap.getMapObjects(pos,["objects"])["objects"]
+
+
+            //TODO loottable/respawn table and prohabilites for different ores
+            mapObjects.forEach(node => {
+                node.tick()
+            })
+
+
+
+        },1000)
     }
 
     getWinSize(){
@@ -274,7 +317,7 @@ class Game{
         if(o == undefined && !foundNpc){
             new GameMessage(o + "=> No specific type","warning",2)
         }else if(!foundNpc){
-            new GameMessage("Inspect: " + JSON.stringify(o))
+            new GameMessage("Inspect: " + o.inspect())
         }
         return o
     }
@@ -284,31 +327,30 @@ class Game{
         const pos_key = `${pos.x}_${pos.y}`
         let mapObject = this.#getObject()
         if(mapObject){
-            this.#playerAddMapObject(mapObject)
-            mapObject.amount -= 1
-            
-            //TODO validate if harvestable | right upgrade
-            // this.#mapRemoveObject(pos_key)
+
+            /**@type MapObject */
+            let items = mapObject.lootTable.roll()
+            console.log(items)
+
+            items.forEach(item => {
+                this.addToStorage(item, 1)
+                mapObject.amount -= 1
+            })
 
             this.renderGame()
             
-            new GameMessage("harvested: " + JSON.stringify(mapObject))
+            new GameMessage("harvested: " + mapObject.inspect())
         }
     }
 
     #getPlayerStorage(){
         class Storage{
             add(object){
-                if(this[object.type]){
+                if(this[object.item]){
                     // when loottable rework this amount replacen
-                    this[object.type].value += object.value
+                    this[object.item].value += object.value
                 }else{
-                    //TODO exoprt transform function
-                    //transform mapObject to storageObject
-                    //TODO IDEA use loottable mechanic for map objects
-                        // IDEA maybe loottable before add => outside storage placen/usen
-                    object["value"] = 1
-                    this[object.type] = object
+                    this[object.item] = object
                 }
                 
             }
@@ -346,7 +388,7 @@ class Game{
         Object.values(this.#_player.storage).forEach(item => {
             div = document.createElement("div")
             div.classList.add("item")
-            div.innerText = `${item.value} x ${item.type}`
+            div.innerText = `${item.value} x ${item.item}`
             root.appendChild(div)
         })
 
@@ -360,7 +402,7 @@ class Game{
 
     //TODO rework duobled code with sotrage.add() function
     addToStorage(key, amount){
-        this.#_player.storage.add({type:key,value:amount})
+        this.#_player.storage.add({item:key,value:amount})
         this.#renderStorage()
     }
 

@@ -1,9 +1,49 @@
 [
     {
-        "type":"iron_ore",
-        "args":[-4,5,6],
-        "order":2,
-        "generator":"dot",
-        "amount":8
+        "class":"node",
+        "texture":"iron_ore",
+        "position":{
+            "x":-3,
+            "y":1
+        },
+        "lootTable":{
+            "maxRolls":2,
+            "rolls":[
+                {
+                    "item": "iron_ore",
+                    "chance": 1,
+                    "amount":1
+                },
+                {
+                    "item": "iron_ore",
+                    "chance": 0.5,
+                    "amount":1
+                }
+            ]
+        }
+    },
+    {
+        "class":"plant",
+        "texture":"coal_ore",
+        "position":{
+            "x":-2,
+            "y":1
+        },
+        "lootTable":{
+            "maxRolls":2,
+            "rolls":[
+                {
+                    "item": "coal_ore",
+                    "chance": 1,
+                    "amount":1
+                },
+                {
+                    "item": "coal_ore",
+                    "chance": 0.5,
+                    "amount":1
+                }
+            ]
+        },
+        "maxGrowState":10
     }
 ]

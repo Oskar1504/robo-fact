@@ -1,3 +1,12 @@
+
+class Position {
+    constructor(x,y){
+        this.x = x
+        this.y = y
+    }
+}
+
+
 class GameMap{
     
     mapObjects = {
@@ -20,10 +29,6 @@ class GameMap{
         const sizeY = this.game.game.render.sizeY
         const fieldSize = this.game.game.render.fieldSize
         const buffer = fieldSize / 5
-
-        //TODO IDEA ressource nodes could be respawnable
-        //delete all empty mapObjects
-        this.mapObjects.objects = this.mapObjects.objects.filter(elm => elm.amount > 0)
         
  
         //reset mainFrame
