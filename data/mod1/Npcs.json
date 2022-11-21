@@ -1,0 +1,26 @@
+[
+    {
+        "position":{
+            "x":3,
+            "y":5
+        },
+        "character":{
+            "type":"lime_wool",
+            "name":"Npc 1",
+            "profession": "lumber",
+            "dialog":{
+                "elementId":"dialog_1",
+                "content":"Defualt npc dialog content"
+            }
+        },
+        "quests":[
+            {
+                "name":"quest 1",
+                "requirements":["iron_ore"],
+                "rewards":["gold_ore"],
+                "xp": 10
+            }
+        ],
+        "trades": []
+    }
+]

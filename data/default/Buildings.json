@@ -1,0 +1,11 @@
+[
+    {
+        "position": {
+            "x": -5,
+            "y": -7
+        },
+        "sizeX":5,
+        "sizeY":3,
+        "type":"stone_bricks"
+    }
+]

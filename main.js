@@ -43,9 +43,56 @@ class Game{
         this.#renderStorage()
 
         this.#createEventListener()
+        this.dataLoader = []
+    }
+
+    async afterInit(){
+        this.dataLoader = await fetch("./data/include.json").then(r => r.json()).then(d => {
+            return d
+        })
+
+        await this.loadGameDataFiles()
+    }
+
+    async loadGameDataFiles(){
+       this.dataLoader.forEach(async folder => {
+            let buildings = await fetch(`./data/${folder}/Buildings.json`).then(r => r.json()).then(d => {
+                return d
+            })
+
+            //TODO mulitple object allowance
+            buildings.forEach(building => {
+                this.gameMap.addSolidBuilding(new MapObjectSolidRect(
+                    new Position(building.position.x,building.position.y),
+                    building.sizeX,
+                    building.sizeY,
+                    building.type
+                ))
+            })
 
 
+            let npcs = await fetch(`./data/${folder}/Npcs.json`).then(r => r.json()).then(d => {
+                return d
+            })
+            npcs.forEach(npc => {
+                this.gameMap.addNPC(new NPC(
+                    new Position(npc.position.x,npc.position.y),
+                    new NPCCharacter(
+                        npc.character.type,
+                        npc.character.name,
+                        new DialogNpc(
+                            npc.character.dialog.elementId,
+                            npc.character.dialog.content
+                        ),
+                        npc.character.profession
+                    ),
+                    npc.quests.map(q => new Quest(q.name, q.requirements, q.rewards, q.xp)),
+                    npc.trades.map(t => new Trade())
+                ))
+            })
 
+            
+       })
     }
 
     #createEventListener(){
@@ -373,6 +420,8 @@ class Game{
         this.#_player.storage.remove(key,amount)
         this.#renderStorage()
     }
+
+    
 }
 
 
@@ -386,35 +435,14 @@ async function main(){
     await images.loadImages()
     /**@type Game */
     game = new Game()
+
+    //load all objects like npcs and mapobjects
+    await game.afterInit()
     new KeyboardController(game)
 
     // dialogs = new DialogHelper()
     // dialogs.addDialog("first", new DialogNpc(".dialogs #dialog_1"))
 
-
-    //TODO auslagern in config loader
-    game.gameMap.addNPC(new NPC(
-        new Position(-3,-5),
-        new NPCCharacter("gray_wool","NPC 1",new DialogNpc("dialog_1","Default dialog content on dialognpc creation"), "miner"),
-        [
-            new Quest("quest 1", ["iron_ore"],["gold_ore"],10)
-        ],
-        []
-    ))
-    
-    game.gameMap.addSolidBuilding(new MapObjectSolidRect(
-        new Position(-5,-7),
-        5,
-        3,
-        "stone_bricks"
-    ))
-    
-    game.gameMap.addSolidBuilding(new MapObjectSolidRect(
-        new Position(5,7),
-        5,
-        3,
-        "cracked_stone_bricks"
-    ))
 }
 main()
 
